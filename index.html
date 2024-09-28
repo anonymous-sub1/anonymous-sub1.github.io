@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="MotIF: Motion Instruction Fine-tuning">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MotIF: Motion Instruction Fine-tuning</title>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-W77JBH4NHE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-W77JBH4NHE');
+</script>
+
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-T3WRXWGZ');</script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+
+  <style>
+    /* Define a CSS class for your section with a specific background color */
+    .colored-section {
+      background-color: #F8F8F8; /* Replace with your desired color code or name */
+      padding: 20px; /* Optional: Add padding for better spacing */
+    }
+
+    .colored-section2 {
+      background-color: #f3ebde; /* Replace with your desired color code or name */
+      padding: 20px; /* Optional: Add padding for better spacing */
+    }
+
+    .colored-section3 {
+      background-color: #f0eeee; /* Replace with your desired color code or name */
+      padding: 20px; /* Optional: Add padding for better spacing */
+    }
+
+    ol {
+      margin-left: 50px; /* Adjust the value to control the tab size */
+    }
+  </style>
+
+  <style>
+    .image-container {
+      display: inline-block;
+      margin: 10px; /* Add margin for spacing */
+    }
+
+    .equal-height {
+      height: 250px; /* Set the desired equal height for both images */
+    }
+  </style>
+
+  <style>
+    .two-column-layout {
+      display: flex;
+      gap: 20px; /* Space between columns */
+      align-items: flex-start; /* Aligns the items at the start of the container */
+    }
+
+    .left-column {
+      flex: 1; /* Takes up equal space with right column */
+    }
+
+    .right-column {
+      flex: 1; /* Takes up equal space with left column */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .greencheck {
+      color: green;
+      font-weight: bold;
+    }
+
+    /* Task Instruction Caption Style */
+    .task-instruction-caption {
+      background-color: #f2f2f2; /* Light gray background */
+      padding: 10px;
+      border-radius: 8px; /* Rounded corners */
+      text-align: center;
+      margin-bottom: 10px; /* Space between caption and image */
+      font-weight: bold;
+    }
+
+    /* Image style */
+    .interpolation-image {
+      width: 300px; /* Fixed width as requested */
+      display: block;
+      margin: 0 auto; /* Center the image horizontally */
+    }
+  </style>
+
+  <style>
+    /* Ensure the video container is positioned relatively to contain the absolute caption */
+    .item {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Style the captions to appear on top of the video */
+    .caption {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 14px;
+      width: 90%; /* Adjust the width if needed */
+    }
+  </style>
+
+  <style>
+    /* Flexbox layout for figure row */
+    .figure-row {
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    /* Caption styles with gray background and rounded corners */
+    .figure-caption {
+        background-color: #f2f2f2; /* Light gray background */
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+        margin-top: 8px;
+    }
+
+    /* Style for individual figure items */
+    .figure-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin: 10px;
+    }
+
+    /* Ensuring all images have the same height */
+    .figure-item img {
+        height: 200px; /* Set a uniform height for all images */
+        width: auto; /* Maintain aspect ratio */
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+  </style>
+
+  <!-- <style>
+    .code-block {
+        background-color: #d4edda; /* Pastel green background */
+        border-radius: 8px; /* Rounded corners */
+        padding: 15px; /* Padding inside the box */
+        font-family: "Courier New", Courier, monospace; /* Code-like font */
+        font-size: 14px; /* Font size */
+        white-space: pre-wrap; /* Preserve whitespace and line breaks */
+        color: #333; /* Text color */
+        margin-bottom: 20px; /* Space below the block */
+        overflow-x: auto; /* Horizontal scroll for long lines */
+    }
+  </style> -->
+
+  <style>
+    .code-block {
+        background-color: #f0f0f0; /* Light gray background */
+        border-radius: 12px; /* Rounded corners */
+        padding: 10px; /* Padding inside the box */
+        font-family: "Courier New", Courier, monospace; /* Code-like font */
+        font-size: 14px; /* Font size */
+        white-space: pre-wrap; /* Preserve whitespace and line breaks */
+        color: #333; /* Text color */
+        margin-bottom: 20px; /* Space below the block */
+        overflow-x: auto; /* Horizontal scroll for long lines */
+        margin: 0 auto; /* Center the box */
+    }
+  </style>
+
+  <style>
+    .dropdown {
+        max-width: 600px;
+        margin: 20px auto;
+        border-radius: 12px;
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-header {
+        padding: 10px 15px;
+        cursor: pointer;
+        font-weight: bold;
+        background-color: #e0e0e0;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .dropdown-header::before {
+        content: '\25BC'; /* Downward triangle */
+        margin-right: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .dropdown.open .dropdown-header::before {
+        transform: rotate(180deg); /* Rotate triangle when open */
+    }
+
+    .dropdown-content {
+        display: none;
+        padding: 15px;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 14px;
+        white-space: pre-wrap;
+        color: #333;
+    }
+
+    .dropdown.open .dropdown-content {
+        display: block;
+    }
+  </style>
+  <script>
+    function toggleDropdown() {
+        const dropdown = document.getElementById('gpt4o-dropdown');
+        dropdown.classList.toggle('open');
+    }
+  </script>
+
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+
+</head>
+
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T3WRXWGZ"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<body onload="updateSingleVideo(); updateQpredVideo();">
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+
+</nav>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">MotIF: Motion Instruction Fine-tuning</h1>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Anonymous Submission</span>
+          </div>
+
+          <br><br>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-fullhd">
+    <div class="hero-body">
+      <div class="container">
+        <div class="columns is-vcentered is-centered">
+          <br>
+          <!-- <img src="media/multiple_human_users.gif" class="interpolation-image" width="800" alt="Interpolate start reference image." /> -->
+          <!-- <video id="teaser" autoplay muted loop width="800" height="100%">
+            <source src="media/MotIF_all_motions_short.mp4"
+                    type="video/mp4">
+          </video> -->
+          <video id="teaser" autoplay muted loop width="800" height="100%">
+            <source src="media/zoom_out_video.mp4"
+                    type="video/mp4">
+          </video>
+
+        </div>
+        <h2 class="subtitle has-text-centered">
+          <span class="dnerf2"> 
+            <!-- How can we <font color="#9900FF"><i>effectively</i></font> customize a robot for human users? -->
+            <!-- We propose <i>Promptable Behaviors</i>, a novel personalization framework that deals with diverse preferences without re-training the agent. -->
+            Evaluating robot motions involves more than just the start and end states; it's about how the task is performed. We propose <font color="#9900FF">motion instruction fine-tuning (MotIF)</font> and <font color="#9900FF">MotIF-1K dataset</font> to improve VLMs' ability to understand nuanced robotic motions.
+        </span>
+        </h2>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="colored-section">
+  <div class="container is-max-desktop is-full-fullhd">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <br/>
+          <p>
+            While success in many robotics tasks can be determined by only observing the final state and how it differs from the initial state - e.g., if an apple is picked up -- many tasks require observing the full motion of the robot to correctly determine success. This is not only because motions are sequential, but also because intermediate actions are necessary for understanding how the robot's motion is grounded in the environment. For example, a robot tasked with brushing someone's hair needs to have semantic grounding and understanding of its motion to recognize that different types of hair require different brushing trajectories. 
+            Prior works often use off-the-shelf vision-language models (VLMs) as success detectors; however, when success depends on the full trajectory, VLMs struggle to make correct judgments for two reasons. First, modern VLMs are trained only on single frames, and thus cannot capture changes over a full trajectory. Second, even if we provide state-of-the-art VLMs with an aggregate input of multiple frames, they still fail to correctly detect success due to a lack of robot data. 
+            Our key idea is to fine-tune VLMs using abstract representations that are able to capture trajectory-level information such as the path the robot takes by overlaying keypoints trajectories on the initial image. 
+            We propose motion instruction fine-tuning (MotIF), a method that fine-tunes VLMs using the aforementioned abstract representations to semantically ground the robot's behavior in the environment. 
+            To benchmark and fine-tune VLMs for robotic motion understanding, we introduce the MotIF-1K dataset containing 653 human and 369 robot demonstrations across 13 task categories.
+            MotIF assesses the success of robot motion given the image observation of the trajectory, task instruction, and motion description.
+            Our model significantly outperforms state-of-the-art VLMs by at least twice in precision and 56.1% in recall, generalizing across unseen motions, tasks, and environments. Finally, we demonstrate practical applications of MotIF in refining and terminating robot planning, and ranking trajectories on how they align with task and motion descriptions.
+          </p>
+        </div>
+      </div>
+    </div>
+    <br>
+  </div>
+
+
+</section>
+
+<section class="section">
+  <div class="container is-max-widescreen">
+
+    <div class="rows">
+
+<style>
+  .centered-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .interpolation-image {
+    display: block;
+    margin: 20px 0;  /* Give some space above and below the image */
+  }
+</style>
+
+<section>
+  <div class="rows">
+    <div class="row is-full-width">
+      <h2 class="title is-3"><span class="dperact">MotIF-1K Dataset</span></h2>
+      <p>The dataset contains 653 human and 369 robot demonstrations across 13 task categories. For each trajectory, we collect the RGBD image observations, optical flow, single keypoint tracking, and annotate task and motion descriptions. For robot demonstrations, joint states are also in the dataset. In the following examples, task descriptions are written in white and motion descriptions are written in <font color="#ff9900">orange</font>.</p>
+      <br>
+
+      <h3 class="title is-4">Robot Demonstrations</h3>
+
+      <h4 class="title is-5">➤ Non-Interactive Tasks</h3>
+        <div class="container">
+          <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="3">
+            <div class="item">
+              <video poster="" autoplay muted loop height="100%">
+                <source src="media/idx48_traj180.mp4"
+                        type="video/mp4">
+              </video>
+              <div class="caption">"deliver lemonade"<br><font color="#ff9900">"move in the shortest path"</font></div>
+            </div>
+            <div class="item">
+              <video poster="" autoplay muted loop height="100%">
+                <source src="media/traj72.mp4"
+                        type="video/mp4">
+              </video>
+              <div class="caption">"draw path"<br><font color="#ff9900">"move to the right while making vertical oscillations"</font></div>
+            </div>
+            <div class="item">
+              <video poster="" autoplay muted loop height="100%">
+                <source src="media/traj88.mp4"
+                        type="video/mp4">
+              </video>
+              <div class="caption">"draw path"<br><font color="#ff9900">"make a triangular motion clockwise"</font></div>
+            </div>
+            <div class="item">
+              <video poster="" autoplay muted loop height="100%">
+                <source src="media/traj88.mp4"
+                        type="video/mp4">
+              </video>
+              <div class="caption">"draw path"<br><font color="#ff9900">"make a triangular motion clockwise"</font></div>
+            </div>
+          </div>
+        </div>
+        <br><br>
+
+        <h4 class="title is-5">➤ Object-Interactive Tasks</h3>
+          <div class="container">
+            <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="3">
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj23.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"shake the boba"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/idx7_traj111.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"stir"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/idx8_traj99_cut.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"pick and place"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="assets/feeding_videos/ours_fett_alternating.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"caption"</div>
+              </div>
+            </div>
+          </div>
+          <br><br>
+
+          <h4 class="title is-5">➤ Human-Interactive Tasks</h3>
+            <div class="container">
+              <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="3">
+                <div class="item">
+                  <video poster="" autoplay muted loop height="100%">
+                    <source src="media/traj129.mp4"
+                            type="video/mp4">
+                  </video>
+                  <div class="caption">"brush hair"</div>
+                </div>
+                <div class="item">
+                  <video poster="" autoplay muted loop height="224px">
+                    <source src="media/idx19_traj175.mp4"
+                            type="video/mp4">
+                  </video>
+                  <div class="caption">"curl hair"</div>
+                </div>
+                <div class="item">
+                  <video poster="" autoplay muted loop height="224px">
+                    <source src="media/idx30_traj90.mp4"
+                            type="video/mp4">
+                  </video>
+                  <div class="caption">"style hair"</div>
+                </div>
+                <div class="item">
+                  <video poster="" autoplay muted loop height="224px">
+                    <source src="media/idx22_traj25.mp4"
+                            type="video/mp4">
+                  </video>
+                  <div class="caption">"take off hairband"</div>
+                </div>
+              </div>
+            </div>
+            <br><br><br>
+
+
+      <h3 class="title is-4">Human Demonstrations</h3>
+
+        <h4 class="title is-5">➤ Object-Interactive Tasks</h3>
+          <div class="container">
+            <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="3">
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj104_color.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"pick and place"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj422_color_sideview.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"shake the coffee can"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj457_color_sideview.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"close the cabinet"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj373_color.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"shake pepper ??"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj651_color_sideview.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"shake the boba"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj69_color_sideview.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"erase whiteboard"</div>
+              </div>
+            </div>
+          </div>
+
+        <h4 class="title is-5">➤ Human-Interactive Tasks</h3>
+          <div class="container">
+            <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="3">
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj72_color_sideview.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"handover bottle"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj361_color_sideview.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"tidy hair"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj44_color_sideview.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"brush hair"</div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/traj72_color_sideview.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption">"handover bottle"</div>
+              </div>
+            </div>
+          </div>
+
+    <!-- </div> -->
+    <br><br><br>
+
+    <h3 class="title is-4">Motion Diversity</h3>
+
+    <h4 class="title is-5">➤ "shake boba" human demonstrations</h3>
+      <div class="container">
+        <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="3">
+          <div class="item">
+            <video poster="" autoplay muted loop height="100%">
+              <source src="media/traj646_color_sideview.mp4"
+                      type="video/mp4">
+            </video>
+            <div class="caption"><font color="#ff9900">"make 4 circular motions clockwise"</font></div>
+          </div>
+          <!-- <div class="item">
+            <video poster="" autoplay muted loop height="100%">
+              <source src="media/traj644_color_sideview.mp4"
+                      type="video/mp4">
+            </video>
+            <div class="caption"><font color="#ff9900">"make 5 circular motions clockwise"</font></div>
+          </div> -->
+          <div class="item">
+            <video poster="" autoplay muted loop height="100%">
+              <source src="media/traj642_color_sideview.mp4"
+                      type="video/mp4">
+            </video>
+            <div class="caption"><font color="#ff9900">"move to the right and to the left, repeating this sequence 3 times"</font></div>
+          </div>
+          <div class="item">
+            <video poster="" autoplay muted loop height="100%">
+              <source src="media/traj637_color_sideview.mp4"
+                      type="video/mp4">
+            </video>
+            <div class="caption"><font color="#ff9900">"move downward, while making horizontal oscillations"</font></div>
+          </div>
+          <div class="item">
+            <video poster="" autoplay muted loop height="100%">
+              <source src="media/traj631_color_sideview.mp4"
+                      type="video/mp4">
+            </video>
+            <div class="caption"><font color="#ff9900">"move upward and downward, repeating this sequence 3 times"</font></div>
+          </div>
+          <div class="item">
+            <video poster="" autoplay muted loop height="100%">
+              <source src="media/traj636_color_sideview.mp4"
+                      type="video/mp4">
+            </video>
+            <div class="caption"><font color="#ff9900">"rotate the object to the left, then reverse to the right, repeating this sequence 2 times"</font></div>
+          </div>
+        </div>
+      </div>
+      <br><br>
+
+      <h4 class="title is-5">➤ "deliver lemonade" robot demonstrations</h3>
+        <div class="container">
+          <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="3">
+            <div class="item">
+              <video poster="" autoplay muted loop height="100%">
+                <source src="media/idx47_traj179.mp4"
+                        type="video/mp4">
+              </video>
+              <div class="caption"><font color="#ff9900">"move in the shortest path"</font></div>
+            </div>
+            <div class="item">
+              <video poster="" autoplay muted loop height="100%">
+                <source src="media/idx49_traj181.mp4"
+                        type="video/mp4">
+              </video>
+              <div class="caption"><font color="#ff9900">"make a detour to the right of the manhole"</font></div>
+            </div>
+            <div class="item">
+              <video poster="" autoplay muted loop height="100%">
+                <source src="media/traj54_color_lemonade.mp4"
+                        type="video/mp4">
+              </video>
+              <div class="caption"><font color="#ff9900">"make a detour to the left of the grass"</font></div>
+            </div>
+            <div class="item">
+              <video poster="" autoplay muted loop height="100%">
+                <source src="media/traj32_color_lemonade.mp4"
+                        type="video/mp4">
+              </video>
+              <div class="caption"><font color="#ff9900">"move in the shortest path"</font></div>
+            </div>
+          </div>
+        </div>
+        <br><br>
+
+        <h4 class="title is-5">➤ "brush hair" robot demonstrations</h3>
+          <div class="container">
+            <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="3">
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/idx14_traj150.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption"><font color="#ff9900">"move downward"</font></div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/idx13_traj144.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption"><font color="#ff9900">"make 5 vertical strokes moving downward, increasing the starting height of each stroke"</font></div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/idx12_traj135.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption"><font color="#ff9900">"move downward while making horizontal oscillations"</font></div>
+              </div>
+              <div class="item">
+                <video poster="" autoplay muted loop height="100%">
+                  <source src="media/idx15_traj155.mp4"
+                          type="video/mp4">
+                </video>
+                <div class="caption"><font color="#ff9900">"make 4 vertical strokes moving downward"</font></div>
+              </div>
+            </div>
+          </div>
+          <br><br>
+
+          <h4 class="title is-5">➤ "style hair" human demonstrations</h3>
+            <div class="container">
+              <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="3">
+                <div class="item">
+                  <video poster="" autoplay muted loop height="100%">
+                    <source src="media/traj230_color_sideview.mp4"
+                            type="video/mp4">
+                  </video>
+                  <div class="caption"><font color="#ff9900">"make 2 circular motions clockwise"</font></div>
+                </div>
+                <div class="item">
+                  <video poster="" autoplay muted loop height="100%">
+                    <source src="media/traj240_color_sideview.mp4"
+                            type="video/mp4">
+                  </video>
+                  <div class="caption"><font color="#ff9900">"make a circular motion counter-clockwise"</font></div>
+                </div>
+                <div class="item">
+                  <video poster="" autoplay muted loop height="100%">
+                    <source src="media/traj226_color_sideview.mp4"
+                            type="video/mp4">
+                  </video>
+                  <div class="caption"><font color="#ff9900">"move upward and to the right following a convex curve, then move downward"</font></div>
+                </div>
+                <div class="item">
+                  <video poster="" autoplay muted loop height="100%">
+                    <source src="media/traj198_color_sideview.mp4"
+                            type="video/mp4">
+                  </video>
+                  <div class="caption"><font color="#ff9900">"move downward and to the right"</font></div>
+                </div>
+                <!-- <div class="item">
+                  <video poster="" autoplay muted loop height="100%">
+                    <source src="media/traj126_color_sideview.mp4"
+                            type="video/mp4">
+                  </video>
+                  <div class="caption">"caption"</div>
+                </div> -->
+              </div>
+            </div>
+            <br><br>
+
+          <h3 class="title is-4">Various Visual Motion Representations</h3>
+            <div class="figure-container">
+
+              <div class="figure-row">
+                  <div class="figure-item">
+                      <img src="media/traj135.jpg" alt="Single Keypoint">
+                      <div class="figure-caption">Single Keypoint</div>
+                  </div>
+                  <div class="figure-item">
+                      <img src="media/traj135_optical_flow.jpg" alt="Optical Flow">
+                      <div class="figure-caption">Optical Flow</div>
+                  </div>
+                  <div class="figure-item">
+                    <img src="media/traj135_1x2_cropped.jpg" alt="Optical Flow">
+                    <div class="figure-caption">2-frame Storyboard</div>
+                  </div>
+                  <div class="figure-item">
+                    <img src="media/traj135_2x2_storyboard_cropped.jpg" alt="Optical Flow">
+                    <div class="figure-caption">4-frame Storyboard</div>
+                  </div>
+                 </div>
+
+      <br><br>
+      
+
+      <h3 class="title is-4">Grounded Motion Annotations</h3>
+      <table style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr>
+                <th rowspan="2" style="border: 1px solid black; padding: 8px;">Category</th>
+                <th rowspan="2" style="border: 1px solid black; padding: 8px;">Task</th>
+                <th rowspan="2" style="border: 1px solid black; padding: 8px;">Motion Description Examples</th>
+                <th colspan="2" style="border: 1px solid black; padding: 8px;">Demonstrations</th>
+            </tr>
+            <tr>
+                <th style="border: 1px solid black; padding: 8px;">Human</th>
+                <th style="border: 1px solid black; padding: 8px;">Robot</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="3" style="border: 1px solid black; padding: 8px;">Non-Interactive</td>
+                <td style="border: 1px solid black; padding: 8px;">Outdoor Navigation</td>
+                <td style="border: 1px solid black; padding: 8px;">move in the shortest path<br>make a detour to the left and follow the walkway, avoiding moving over the grass</td>
+                <td style="border: 1px solid black; padding: 8px;">-</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Indoor Navigation</td>
+                <td style="border: 1px solid black; padding: 8px;">move in the shortest path<br>make a detour to the right of the long table, avoiding collision with chairs</td>
+                <td style="border: 1px solid black; padding: 8px;">-</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Draw Path</td>
+                <td style="border: 1px solid black; padding: 8px;">make a triangular motion clockwise<br>move upward and to the right</td>
+                <td style="border: 1px solid black; padding: 8px;">-</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td rowspan="6" style="border: 1px solid black; padding: 8px;">Object-Interactive</td>
+                <td style="border: 1px solid black; padding: 8px;">Shake</td>
+                <td style="border: 1px solid black; padding: 8px;">move up and down 4 times<br>completely flip the object to the right and flip it back to its initial state</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Pick and place</td>
+                <td style="border: 1px solid black; padding: 8px;">move downward and to the left<br>move downward while getting farther from &lt;obstacle&gt;, then move to the left</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Stir</td>
+                <td style="border: 1px solid black; padding: 8px;">make 2 circular motions counter-clockwise<br>move upward, then move downward while making diagonal oscillations</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Wipe</td>
+                <td style="border: 1px solid black; padding: 8px;">move to the right and move to the left, repeating this sequence 2 times<br>move to the right, making diagonal oscillations</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Open/Close the cabinet</td>
+                <td style="border: 1px solid black; padding: 8px;">move to the right<br>move upward and to the left</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+                <td style="border: 1px solid black; padding: 8px;">-</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Spread Condiment</td>
+                <td style="border: 1px solid black; padding: 8px;">move to the left and to the right<br>move to the left while making back and forth oscillations</td>
+                <td style="border: 1px solid black; padding: 8px;">-</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td rowspan="4" style="border: 1px solid black; padding: 8px;">User-Interactive</td>
+                <td style="border: 1px solid black; padding: 8px;">Handover</td>
+                <td style="border: 1px solid black; padding: 8px;">move upward and to the left<br>move downward and to the right following a concave curve</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+                <td style="border: 1px solid black; padding: 8px;">-</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Brush hair</td>
+                <td style="border: 1px solid black; padding: 8px;">move downward while making horizontal oscillations<br>make 5 strokes downward, increasing the starting height of each stroke</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Tidy hair</td>
+                <td style="border: 1px solid black; padding: 8px;">move downward and to the right following a convex curve<br>make a circular motion clockwise, move upward, then move downward and to the right</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">Style hair</td>
+                <td style="border: 1px solid black; padding: 8px;">move to the right shortly, then move to the left following a concave curve<br>make a circular motion clockwise, gradually increasing the radius of the circle</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+                <td style="border: 1px solid black; padding: 8px;" class="greencheck">&#10004;</td>
+            </tr>
+        </tbody>
+    </table>    
+
+      <!-- <div class="columns is-vcentered is-centered">
+        <br>
+        <img src="media/app_table_1.png" class="interpolation-image" alt="Interpolate start reference image." style="width: 100%;" />
+      </div> -->
+      <br>
+
+      <p>
+        <span class="dnerf2">App. Table 1. <b>List of Tasks and Motion Descriptions.</b> The collected dataset contains 653 human and 369 robot demonstrations
+          across 13 task categories, 36 task instructions, and 239 motion descriptions. Checkmarks denote which agent (human/robot)
+          demonstrations exist for each task. The table provides two motion description examples for each task.
+      </span>
+      </p>
+
+    </div>
+  <!-- </div> -->
+<!-- </section>
+
+<section> -->
+
+  <br><br>
+  
+  <div class="rows">
+    <div class="row is-full-width">
+      <h2 class="title is-3"><span class="dperact">Results</span></h2>
+      <h3 class="title is-4 ">How does MotIF compare to state-of-the-art VLMs?</h3>
+
+      <!-- <p>
+        aa
+      </p>
+      <br> -->
+
+      <div class="columns is-vcentered is-centered">
+        <br>
+        <img src="media/motif_figure7.png" class="interpolation-image" alt="Interpolate start reference image." style="width: 100%;" />
+      </div>
+
+      <p>
+        <span class="dnerf2">Fig. 7. <b>Performance on MotIF-1K.</b>
+          (a) shows that our models outperforms state-of-the-art (SOTA) off-the-shelf models in validation and test splits.
+          (b) We explore motion representations in terms of single-frame vs. multi-frame and the effectiveness of trajectory drawing. Single-frame with trajectory drawing demonstrates the highest recall in the test split, while other motion representations falter. Our approach identifies valid motions effectively and generalizes better than baselines.
+      </span>
+      </p>
+      <br><br>
+
+      <div class="columns is-vcentered is-centered">
+        <br>
+        <img src="media/overview_boba.png" class="interpolation-image" alt="Interpolate start reference image." style="width: 100%;" />
+      </div>
+
+      <p>
+        <span class="dnerf2">App. Fig. 10. <b>Comparison between MotIF and state-of-the-art closed VLMs.</b>
+          We compare three VLMs: our model, GPT-4o, and Gemini-1.5 Pro, along a conversation between a user and an LLM. The user specifies the task and the LLM generates an appropriate motion description. The performance of each VLM is measured by predicting if the robot motions align (VLM response: 1) with motion descriptions suggested from the LLM or not (VLM response: 0), where the images are not included in training our model. Comparing the accuracy, precision, and recall for each model, MotIF shows the highest performance in all metrics.
+      </span>
+      </p>
+      <br>
+
+      <p>
+        App. Fig. 10 shows a toy scenario comparing GPT-4o, Gemini-1.5 Pro, and MotIF, along a conversation between a user and an LLM (ChatGPT).
+        After three turns of conversation, we calculate the performance of motion discrimination using the VLMs. Results show that our model achieves the highest accuracy, precision, and recall, successfully understanding robotic motions in all cases. 
+      </p>
+      <br>
+
+    </div>
+  </div>
+
+
+    <br>
+
+    <h3 class="title is-4 ">Visualization of MotIF Outputs</h3>
+
+    <!-- <div class="columns is-vcentered is-centered">
+        <br>
+        <img src="media/CVPR2024_demo_video_human_demonstration.gif" class="interpolation-image" alt="Interpolate start reference image."
+        style="width: 70%;" />
+    </div> -->
+    <br>
+    
+    <!-- <div class="container">
+      <div id="results-carousel" class="carousel results-carousel" data-slides-to-show="1">
+        <div class="item item-steve">
+          <video poster="" id="steve" autoplay muted loop height="100%">
+            <source src="media/intro/1_handsan.mp4"
+                    type="video/mp4">
+          </video>
+          <div class="two-column-layout">
+            <div class="left-column">
+              <video poster="" id="steve" autoplay muted loop width="100%">
+                <source src="media/MotIF_all_motions_short.mp4" type="video/mp4">
+              </video>
+            </div>
+            
+            <div class="right-column">
+              <p>hihi</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Task Instruction: pick up the cup and place it to the lower left of the laptop</th>
+                    <th>MotIF Output</th>
+                    <th>Prediction Correctness</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Motion Description 1: move downward, then move to the left</td>
+                    <td>1</td>
+                    <td class="greencheck">&#10004;</td>
+                  </tr>
+                  <tr>
+                    <td>Motion Description 2: move farther from the laptop, move downward, then move to the left</td>
+                    <td>1</td>
+                    <td class="greencheck">&#10004;</td>
+                  </tr>
+                  <tr>
+                    <td>Motion Description 3: move downward and to the left, passing over the laptop</td>
+                    <td>0</td>
+                    <td class="greencheck">&#10004;</td>
+                  </tr>
+                  <tr>
+                    <td>Motion Description 4: move over the laptop</td>
+                    <td>0</td>
+                    <td class="greencheck">&#10004;</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="item item-fullbody">
+          <video poster="" id="fullbody" autoplay muted loop height="100%">
+            <source src="media/intro/2_food_bin.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-shiba">
+          <video poster="" id="shiba" autoplay muted loop height="100%">
+            <source src="media/intro/4_drawer.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-blueshirt">
+          <video poster="" id="blueshirt" autoplay muted loop height="100%">
+            <source src="media/intro/3_marker.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        </div>
+      </div> -->
+
+      <p>➤ While motion description <i>"move downward, then move to the left"</i> is included in the training data, our VLM generalizes to understanding unseen motion descriptions (row 2-4 in table).</p>
+      <br>
+
+      <div class="two-column-layout">
+        <div class="left-column">
+          <!-- Task Instruction Caption Above the Image -->
+          <div class="task-instruction-caption">Task Instruction: pick up the cup and place it to the lower left of the laptop</div>
+          
+          <!-- Image from the new table data -->
+          <div class="columns is-vcentered is-centered">
+            <img src="media/traj106.jpg" class="interpolation-image" alt="Interpolate start reference image." />
+          </div>
+        </div>
+        
+        <div class="right-column">
+          <table>
+            <thead>
+              <tr>
+                <th>Motion Description</th>
+                <th>MotIF Output</th>
+                <th>Prediction Correctness</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>move downward, then move to the left</td>
+                <td>1</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move farther from the laptop, move downward, then move to the left</td>
+                <td>1</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move downward and to the left, passing over the laptop</td>
+                <td>0</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move over the laptop</td>
+                <td>0</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <br><br>
+
+      <p>➤ <strong>The following trajectory visualizes a motion in an <font color="#9900FF">unseen camera viewpoint</font>.</strong> Although the training data only contain front view images for this task, our model effectively understands the robot's motion in an unseen camera viewpoint (topdown view).</p>
+      <br>
+
+      <div class="two-column-layout">
+        <div class="left-column">
+          <!-- Task Instruction Caption Above the Image -->
+          <div class="task-instruction-caption">Task Instruction: curl hair</div>
+          
+          <!-- Image from the new table data -->
+          <div class="columns is-vcentered is-centered">
+            <img src="media/traj14.jpg" class="interpolation-image" alt="Trajectory visualization image." />
+          </div>
+        </div>
+        
+        <div class="right-column">
+          <table>
+            <thead>
+              <tr>
+                <th>Motion Description</th>
+                <th>MotIF Output</th>
+                <th>Prediction Correctness</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>move downward, while making horizontal oscillations</td>
+                <td>1</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move downward, while making side-to-side movements</td>
+                <td>1</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move downward</td>
+                <td>0</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move downward, while making vertical oscillations</td>
+                <td>0</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <br><br>
+
+      <p>➤ <strong>The following trajectory visualizes a motion with an <font color="#9900FF">unseen object</font>.</strong> While the training data only contains motions of spreading condiments on pizza with parmesan cheese, our model effectively understands the robot's motion with an unseen object, parsley, accurately determining ground truth and aligning paraphrased motion descriptions with the robot's motion.</p>
+      <br>
+      
+      <div class="two-column-layout">
+        <div class="left-column">
+          <!-- Task Instruction Caption Above the Image -->
+          <div class="task-instruction-caption">Task Instruction: sprinkle parsley on pizza</div>
+          
+          <!-- Image from the new table data -->
+          <div class="columns is-vcentered is-centered">
+            <img src="media/traj166.jpg" class="interpolation-image" alt="Trajectory visualization image." style="width: 300px;" />
+          </div>
+        </div>
+        
+        <div class="right-column">
+          <table>
+            <thead>
+              <tr>
+                <th>Motion Description</th>
+                <th>MotIF Output</th>
+                <th>Prediction Correctness</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>move to the left, while making vertical oscillations and alternating rotations</td>
+                <td>1</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move to the left, while making vertical oscillations</td>
+                <td>1</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move to the left, while making vertical shaking movements</td>
+                <td>1</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move to the left in a straight line</td>
+                <td>0</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <br><br>
+
+      <p>➤ <strong>The following trajectory visualizes an <font color="#9900FF">unseen grounded motion</font>.</strong> Our model effectively understands the semantic grounding of the robot's motion in a navigation task, such as moving over or making a detour to avoid a specific instance (e.g., manhole) in the environment.</p>
+      <br>
+      
+      <div class="two-column-layout">
+        <div class="left-column">
+          <!-- Task Instruction Caption Above the Image -->
+          <div class="task-instruction-caption">Task Instruction: deliver lemonade</div>
+          
+          <!-- Image from the new table data -->
+          <div class="columns is-vcentered is-centered">
+            <img src="media/traj181.jpg" class="interpolation-image" alt="Trajectory visualization image." style="width: 300px;" />
+          </div>
+        </div>
+        
+        <div class="right-column">
+          <table>
+            <thead>
+              <tr>
+                <th>Motion Description</th>
+                <th>MotIF Output</th>
+                <th>Prediction Correctness</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>make a detour to the right of the manhole</td>
+                <td>1</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move forward, making a detour to the right of the manhole</td>
+                <td>1</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move forward in the shortest path</td>
+                <td>0</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+              <tr>
+                <td>move forward in a straight line, moving over the manhole</td>
+                <td>0</td>
+                <td class="greencheck">&#10004;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <br><br><br>
+      
+      <h3 class="title is-4 ">Qualitative Analysis on Off-the-shelf VLMs</h3>
+      <p>Example Trajectory of a robot brushing hair. The robot is brushing the hair by moving downward, while making horizontal oscillations.</p>
+      <br>
+      <p>To assess the motion understanding capabilities of off-the-shelf VLMs, we conducted an experiment where GPT-4V and GPT-4o were asked to describe a robot's motion from a video of it brushing hair. Although GPT-4o generated a detailed response by extracting keyframes and detecting the trajectory, it ultimately failed to describe the specific shape of the motion or how it was grounded in the scene.</p>
+      <br>
+
+        <video id="teaser" autoplay muted loop height="30%">
+          <source src="media/traj129.mp4"
+                  type="video/mp4">
+        </video>
+        <!-- <div class="caption">"deliver lemonade"<br><font color="#ff9900">"move in the shortest path"</font></div> -->
+        <br>
+
+        <!-- <div class="item">
+          <video poster="" autoplay muted loop height="100%">
+            <source src="media/traj129.mp4"
+                    type="video/mp4">
+          </video>
+          <div class="caption">"deliver lemonade"<br><font color="#ff9900">"move in the shortest path"</font></div>
+        </div>
+        <br> -->
+
+        <p>The model is given a video of the robot's motion with the question prompt. The video does not include any trajectory visualization. Given the video, the model fails to describe the semantic meaning of the robot's motion.</p>
+        <br>
+
+        <div class="dropdown" id="gpt4o-dropdown">
+          <div class="dropdown-header" onclick="toggleDropdown()">
+              <!-- See GPT-4o response -->
+              See GPT-4o response
+          </div>
+          <div class="dropdown-content">
+              # Question<br>
+              Describe the robot's motion.<br><br>
+      
+              # GPT-4V Answer<br>
+              It seems you've uploaded a video file related to the robot's motion. Let's analyze the content of this video to describe the motion in detail. I'll review the video and provide a description of the robot's movements. Please hold on for a moment.<br><br>
+              The video is ready for viewing. Please watch the robot's motion in the video above. After viewing, I can help with any specific analysis or description you need about the robot's movements. If you have specific aspects of the motion you're interested in, such as speed, trajectory, or interaction with objects, let me know!<br><br>
+      
+              # GPT-4o Answer<br>
+              The first frame of the video shows the side view of a robot performing a task. To describe the robot's motion, I'll need to analyze the frames in the video to identify the movement pattern. I'll extract and analyze key frames to provide a detailed description of the motion.<br><br>
+              Let's proceed by extracting key frames and tracking the movement of the robot's end effector.<br><br>
+              The extracted key frames from the video show the robot's motion over time. To provide a detailed description of the robot's motion, let's analyze these frames:<br><br>
+              The robot's end effector appears to be moving in a specific path throughout the video.<br>
+              The trajectory includes several distinct positions and orientations at different times.<br>
+              To describe the motion more precisely, I will track the movement of the robot's end effector across these frames. This will help in visualizing and understanding the pattern of movement.<br><br>
+              The tracked positions of the robot's end effector across the frames indicate its motion pattern. Here is the detailed description of the robot's motion:<br><br>
+              Initial Position: The robot starts with the end effector near the top left quadrant of the frame.<br><br>
+              Motion Path: The end effector follows a somewhat curved path, moving diagonally towards the bottom right quadrant.<br><br>
+              Key Positions:<br>
+              Frame 1: (146, 166)<br>
+              Frame 2: (174, 173)<br>
+              Frame 3: (303, 221)<br>
+              Frame 4: (260, 236)<br>
+              Frame 5: (296, 245)<br>
+              Frame 6: (265, 225)<br>
+              Frame 7: (300, 266)<br>
+              Frame 8: (245, 282)<br>
+              Frame 9: (159, 258)<br>
+              Frame 10: (289, 319)<br>
+              Frame 11: (262, 353)<br>
+              Frame 12: (318, 336)<br><br>
+              Overall Trajectory: The robot's end effector moves in a non-linear path with variations in both the x and y directions, suggesting a complex motion.<br>
+              The movement is likely part of a task requiring precise positioning and orientation changes. If you have any specific aspects of the motion or additional details you'd like to focus on, please let me know!
+          </div>
+        </div>
+        <br><br>
+
+        <p>The model is given a video of the robot's motion with the robot's trajectory overlaid, and the question prompt.</p>
+
+        <div class="dropdown" id="gpt4o-toggle">
+            <div class="dropdown-header" onclick="toggleDropdown()">
+              See GPT-4o response
+            </div>
+            <div class="dropdown-content">
+                # GPT-4o Answer<br><br>
+                I've loaded the video of the robot's motion for the task of brushing hair. To provide a detailed description of the motion, I will analyze the video and describe the path and color change over time, along with the final position indicated by the red dot.<br><br>
+                Let's start by extracting key frames and analyzing the motion trajectory.<br>
+                &lt;12x1 storyboard displayed&gt;<br><br>
+                The key frames extracted from the video provide a visual representation of the robot's motion for the task of brushing hair. Here's a detailed description of the motion:<br><br>
+                Initial Position: The robot starts with the brush positioned near the top of the hair, as indicated by the white color at the beginning of the trajectory.<br><br>
+                Motion Path: The robot moves the brush in a downward stroke, following a smooth and continuous path. The color of the trajectory gradually changes from white to green, indicating the progression of time.<br><br>
+                Path Continuation: The robot completes the first downward stroke and moves the brush back up to the starting position, preparing for another stroke. The color of the line continues to change from white to green, showing the ongoing motion.<br><br>
+                Red Dot: The red dot at the end of the trajectory indicates the last position of the brush at the end of the video. This dot signifies the completion of the brushing motion.<br><br>
+                Overall, the robot's motion is characterized by a repetitive up-and-down brushing movement, with the color-changing line visualizing the time progression of the motion. The red dot marks the final position of the brush.
+            </div>
+        </div>
+
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column">
+        <div class="content has-text-centered">
+          <p>
+            This website is based on the <a href="https://github.com/nerfies/nerfies.github.io">Nerfies website template</a>,
+            which is licensed under a <a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons
+            Attribution-ShareAlike 4.0 International License</a> .
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+</body>
+</html>
